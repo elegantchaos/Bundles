@@ -22,8 +22,8 @@ public struct BundleInfo {
     public let commit: String
     public let copyright: String
     
-    public var versionString: String { version.asString }
-    public var fullVersionString: String { "\(version.asString) (\(build))" }
+    public var versionString: String { return version.asString }
+    public var fullVersionString: String { return "\(version.asString) (\(build))" }
         
     init(for bundle: Bundle = Bundle.main) {
         id = bundle.bundleIdentifier!
