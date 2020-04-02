@@ -42,7 +42,7 @@ public extension Bundle {
     }
 
     func hasFramework(named name: String) -> Bool {
-        let url = bundleURL.appendingPathComponents(["Contents", "Frameworks", "SparkleBridgeClient.framework"])
+        let url = bundleURL.appendingPathComponents(["Contents", "Frameworks", "\(name).framework"])
         return FileManager.default.fileExists(atURL: url)
     }
 }
