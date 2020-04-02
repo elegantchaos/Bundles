@@ -25,7 +25,7 @@ public struct BundleInfo {
     public var versionString: String { return version.asString }
     public var fullVersionString: String { return "\(version.asString) (\(build))" }
         
-    init(for bundle: Bundle = Bundle.main) {
+    public init(for bundle: Bundle = Bundle.main) {
         id = bundle.bundleIdentifier!
         let info = bundle.infoDictionary!
         name = info[stringWithKey: "CFBundleName"] ?? ""
