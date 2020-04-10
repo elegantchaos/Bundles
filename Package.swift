@@ -20,10 +20,10 @@ let package = Package(
             targets: ["Bundles"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/elegantchaos/CollectionExtensions", from: "1.0.2"),
-        .package(url: "https://github.com/elegantchaos/Images", from: "1.0.0"),
-        .package(url: "https://github.com/elegantchaos/Files", from: "1.0.4"),
-        .package(url: "https://github.com/elegantchaos/SemanticVersion", from: "1.1.0"),
+        .package(url: "https://github.com/elegantchaos/CollectionExtensions.git", from: "1.0.2"),
+        .package(url: "https://github.com/elegantchaos/Images.git", from: "1.0.0"),
+        .package(url: "https://github.com/elegantchaos/Files.git", from: "1.0.4"),
+        .package(url: "https://github.com/elegantchaos/SemanticVersion.git", from: "1.1.0"),
     ],
     targets: [
         .target(
