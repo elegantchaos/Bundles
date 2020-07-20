@@ -24,6 +24,7 @@ let package = Package(
         .package(url: "https://github.com/elegantchaos/Images.git", from: "1.0.0"),
         .package(url: "https://github.com/elegantchaos/Files.git", from: "1.1.3"),
         .package(url: "https://github.com/elegantchaos/SemanticVersion.git", from: "1.1.0"),
+        .package(url: "https://github.com/elegantchaos/XCTestExtensions", from: "1.1.2")
     ],
     targets: [
         .target(
@@ -31,6 +32,6 @@ let package = Package(
             dependencies: ["CollectionExtensions", "Files", "Images", "SemanticVersion"]),
         .testTarget(
             name: "BundlesTests",
-            dependencies: ["Bundles"]),
+            dependencies: ["Bundles", "XCTestExtensions"]),
     ]
 )

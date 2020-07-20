@@ -9,19 +9,15 @@ on: [push, pull_request]
 
 jobs:
 
-    macOS-swift-51:
-        name: macOS (Swift 5.1)
-        runs-on: macOS-latest
+    linux-swift-51:
+        name: Linux (Swift 5.1)
+        runs-on: ubuntu-18.04
+        container: swift:5.1
         steps:
         - name: Checkout
           uses: actions/checkout@v1
         - name: Make Logs Directory
           run: mkdir logs
-        - name: Xcode Version
-          run: |
-            sudo xcode-select -s /Applications/Xcode_11.3.1.app
-            xcodebuild -version
-            swift --version
         - name: Swift Version
           run: swift --version
         - name: Build (Release)
@@ -39,13 +35,209 @@ jobs:
           if: always()
           with:
             type: ${{ job.status }}
-            job_name: 'macOS (Swift 5.1)'
+            job_name: 'Linux (Swift 5.1)'
             mention_if: 'failure'
             url: ${{ secrets.SLACK_WEBHOOK }}
 
 
-    macOS-swift-53:
-        name: macOS (Swift 5.3 Nightly)
+    linux-swift-53:
+        name: Linux (Swift 5.3 Nightly)
+        runs-on: ubuntu-18.04
+        container: swiftlang/swift:nightly-5.3-bionic
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v1
+        - name: Make Logs Directory
+          run: mkdir logs
+        - name: Swift Version
+          run: swift --version
+        - name: Build (Release)
+          run: swift build -c release
+        - name: Test (Release)
+          run: swift test --configuration release -Xswiftc -enable-testing --enable-test-discovery
+        - name: Upload Logs
+          uses: actions/upload-artifact@v1
+          if: always()
+          with:
+            name: logs
+            path: logs
+        - name: Slack Notification
+          uses: elegantchaos/slatify@master
+          if: always()
+          with:
+            type: ${{ job.status }}
+            job_name: 'Linux (Swift 5.3 Nightly)'
+            mention_if: 'failure'
+            url: ${{ secrets.SLACK_WEBHOOK }}
+
+
+    linux-swift-nightly:
+        name: Linux (Swift Development Nightly)
+        runs-on: ubuntu-18.04
+        container: swiftlang/swift:nightly
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v1
+        - name: Make Logs Directory
+          run: mkdir logs
+        - name: Swift Version
+          run: swift --version
+        - name: Build (Release)
+          run: swift build -c release
+        - name: Test (Release)
+          run: swift test --configuration release -Xswiftc -enable-testing --enable-test-discovery
+        - name: Upload Logs
+          uses: actions/upload-artifact@v1
+          if: always()
+          with:
+            name: logs
+            path: logs
+        - name: Slack Notification
+          uses: elegantchaos/slatify@master
+          if: always()
+          with:
+            type: ${{ job.status }}
+            job_name: 'Linux (Swift Development Nightly)'
+            mention_if: 'failure'
+            url: ${{ secrets.SLACK_WEBHOOK }}
+
+
+    xcode-swift-51:
+        name: Xcode (Swift 5.1)
+        runs-on: macOS-latest
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v1
+        - name: Make Logs Directory
+          run: mkdir logs
+        - name: Xcode Version
+          run: |
+            sudo xcode-select -s /Applications/Xcode_11.3.1.app
+            xcodebuild -version
+            swift --version
+        - name: XC Pretty
+          run: sudo gem install xcpretty-travis-formatter
+        - name: Detect Workspace & Scheme (macOS)
+          run: |
+            WORKSPACE="Bundles.xcworkspace"
+            if [[ ! -e "$WORKSPACE" ]]
+            then
+            WORKSPACE="."
+            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Bundles-Package || true))
+            if [[ $GOTPACKAGE != "" ]]
+            then
+            SCHEME="Bundles-Package"
+            else
+            SCHEME="Bundles"
+            fi
+            else
+            SCHEME="Bundles-macOS"
+            fi
+            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
+        - name: Build (macOS Release)
+          run: |
+            source "setup.sh"
+            echo "Building workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-macOS-xcode-build-release.log | xcpretty
+        - name: Test (macOS Release)
+          run: |
+            source "setup.sh"
+            echo "Testing workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME"  -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-macOS-xcode-test-release.log | xcpretty
+        - name: Detect Workspace & Scheme (iOS)
+          run: |
+            WORKSPACE="Bundles.xcworkspace"
+            if [[ ! -e "$WORKSPACE" ]]
+            then
+            WORKSPACE="."
+            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Bundles-Package || true))
+            if [[ $GOTPACKAGE != "" ]]
+            then
+            SCHEME="Bundles-Package"
+            else
+            SCHEME="Bundles"
+            fi
+            else
+            SCHEME="Bundles-iOS"
+            fi
+            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
+        - name: Build (iOS Release)
+          run: |
+            source "setup.sh"
+            echo "Building workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-iOS-build-release.log | xcpretty
+        - name: Test (iOS Release)
+          run: |
+            source "setup.sh"
+            echo "Testing workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "name=iPhone 11" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-iOS-test-release.log | xcpretty
+        - name: Detect Workspace & Scheme (tvOS)
+          run: |
+            WORKSPACE="Bundles.xcworkspace"
+            if [[ ! -e "$WORKSPACE" ]]
+            then
+            WORKSPACE="."
+            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Bundles-Package || true))
+            if [[ $GOTPACKAGE != "" ]]
+            then
+            SCHEME="Bundles-Package"
+            else
+            SCHEME="Bundles"
+            fi
+            else
+            SCHEME="Bundles-tvOS"
+            fi
+            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
+        - name: Build (tvOS Release)
+          run: |
+            source "setup.sh"
+            echo "Building workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-tvOS-build-release.log | xcpretty
+        - name: Test (tvOS Release)
+          run: |
+            source "setup.sh"
+            echo "Testing workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "name=Apple TV" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-tvOS-test-release.log | xcpretty
+        - name: Detect Workspace & Scheme (watchOS)
+          run: |
+            WORKSPACE="Bundles.xcworkspace"
+            if [[ ! -e "$WORKSPACE" ]]
+            then
+            WORKSPACE="."
+            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Bundles-Package || true))
+            if [[ $GOTPACKAGE != "" ]]
+            then
+            SCHEME="Bundles-Package"
+            else
+            SCHEME="Bundles"
+            fi
+            else
+            SCHEME="Bundles-watchOS"
+            fi
+            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
+        - name: Build (watchOS Release)
+          run: |
+            source "setup.sh"
+            echo "Building workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-watchOS-build-release.log | xcpretty
+        - name: Upload Logs
+          uses: actions/upload-artifact@v1
+          if: always()
+          with:
+            name: logs
+            path: logs
+        - name: Slack Notification
+          uses: elegantchaos/slatify@master
+          if: always()
+          with:
+            type: ${{ job.status }}
+            job_name: 'Xcode (Swift 5.1)'
+            mention_if: 'failure'
+            url: ${{ secrets.SLACK_WEBHOOK }}
+
+
+    xcode-swift-53:
+        name: Xcode (Swift 5.3 Nightly)
         runs-on: macOS-latest
         env:
             TOOLCHAINS: swift
@@ -72,12 +264,111 @@ jobs:
           run: |
             xcodebuild -version
             xcrun swift --version
-        - name: Swift Version
-          run: swift --version
-        - name: Build (Release)
-          run: export PATH="swift-latest:$PATH"; swift build -c release
-        - name: Test (Release)
-          run: export PATH="swift-latest:$PATH"; swift test --configuration release -Xswiftc -enable-testing --enable-test-discovery
+        - name: XC Pretty
+          run: sudo gem install xcpretty-travis-formatter
+        - name: Detect Workspace & Scheme (macOS)
+          run: |
+            WORKSPACE="Bundles.xcworkspace"
+            if [[ ! -e "$WORKSPACE" ]]
+            then
+            WORKSPACE="."
+            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Bundles-Package || true))
+            if [[ $GOTPACKAGE != "" ]]
+            then
+            SCHEME="Bundles-Package"
+            else
+            SCHEME="Bundles"
+            fi
+            else
+            SCHEME="Bundles-macOS"
+            fi
+            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
+        - name: Build (macOS Release)
+          run: |
+            source "setup.sh"
+            echo "Building workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-macOS-xcode-build-release.log | xcpretty
+        - name: Test (macOS Release)
+          run: |
+            source "setup.sh"
+            echo "Testing workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME"  -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-macOS-xcode-test-release.log | xcpretty
+        - name: Detect Workspace & Scheme (iOS)
+          run: |
+            WORKSPACE="Bundles.xcworkspace"
+            if [[ ! -e "$WORKSPACE" ]]
+            then
+            WORKSPACE="."
+            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Bundles-Package || true))
+            if [[ $GOTPACKAGE != "" ]]
+            then
+            SCHEME="Bundles-Package"
+            else
+            SCHEME="Bundles"
+            fi
+            else
+            SCHEME="Bundles-iOS"
+            fi
+            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
+        - name: Build (iOS Release)
+          run: |
+            source "setup.sh"
+            echo "Building workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-iOS-build-release.log | xcpretty
+        - name: Test (iOS Release)
+          run: |
+            source "setup.sh"
+            echo "Testing workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "name=iPhone 11" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-iOS-test-release.log | xcpretty
+        - name: Detect Workspace & Scheme (tvOS)
+          run: |
+            WORKSPACE="Bundles.xcworkspace"
+            if [[ ! -e "$WORKSPACE" ]]
+            then
+            WORKSPACE="."
+            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Bundles-Package || true))
+            if [[ $GOTPACKAGE != "" ]]
+            then
+            SCHEME="Bundles-Package"
+            else
+            SCHEME="Bundles"
+            fi
+            else
+            SCHEME="Bundles-tvOS"
+            fi
+            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
+        - name: Build (tvOS Release)
+          run: |
+            source "setup.sh"
+            echo "Building workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-tvOS-build-release.log | xcpretty
+        - name: Test (tvOS Release)
+          run: |
+            source "setup.sh"
+            echo "Testing workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "name=Apple TV" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-tvOS-test-release.log | xcpretty
+        - name: Detect Workspace & Scheme (watchOS)
+          run: |
+            WORKSPACE="Bundles.xcworkspace"
+            if [[ ! -e "$WORKSPACE" ]]
+            then
+            WORKSPACE="."
+            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Bundles-Package || true))
+            if [[ $GOTPACKAGE != "" ]]
+            then
+            SCHEME="Bundles-Package"
+            else
+            SCHEME="Bundles"
+            fi
+            else
+            SCHEME="Bundles-watchOS"
+            fi
+            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
+        - name: Build (watchOS Release)
+          run: |
+            source "setup.sh"
+            echo "Building workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-watchOS-build-release.log | xcpretty
         - name: Upload Logs
           uses: actions/upload-artifact@v1
           if: always()
@@ -89,13 +380,13 @@ jobs:
           if: always()
           with:
             type: ${{ job.status }}
-            job_name: 'macOS (Swift 5.3 Nightly)'
+            job_name: 'Xcode (Swift 5.3 Nightly)'
             mention_if: 'failure'
             url: ${{ secrets.SLACK_WEBHOOK }}
 
 
-    macOS-swift-nightly:
-        name: macOS (Swift Development Nightly)
+    xcode-swift-nightly:
+        name: Xcode (Swift Development Nightly)
         runs-on: macOS-latest
         env:
             TOOLCHAINS: swift
@@ -122,12 +413,111 @@ jobs:
           run: |
             xcodebuild -version
             xcrun swift --version
-        - name: Swift Version
-          run: swift --version
-        - name: Build (Release)
-          run: export PATH="swift-latest:$PATH"; swift build -c release
-        - name: Test (Release)
-          run: export PATH="swift-latest:$PATH"; swift test --configuration release -Xswiftc -enable-testing --enable-test-discovery
+        - name: XC Pretty
+          run: sudo gem install xcpretty-travis-formatter
+        - name: Detect Workspace & Scheme (macOS)
+          run: |
+            WORKSPACE="Bundles.xcworkspace"
+            if [[ ! -e "$WORKSPACE" ]]
+            then
+            WORKSPACE="."
+            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Bundles-Package || true))
+            if [[ $GOTPACKAGE != "" ]]
+            then
+            SCHEME="Bundles-Package"
+            else
+            SCHEME="Bundles"
+            fi
+            else
+            SCHEME="Bundles-macOS"
+            fi
+            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
+        - name: Build (macOS Release)
+          run: |
+            source "setup.sh"
+            echo "Building workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-macOS-xcode-build-release.log | xcpretty
+        - name: Test (macOS Release)
+          run: |
+            source "setup.sh"
+            echo "Testing workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME"  -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-macOS-xcode-test-release.log | xcpretty
+        - name: Detect Workspace & Scheme (iOS)
+          run: |
+            WORKSPACE="Bundles.xcworkspace"
+            if [[ ! -e "$WORKSPACE" ]]
+            then
+            WORKSPACE="."
+            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Bundles-Package || true))
+            if [[ $GOTPACKAGE != "" ]]
+            then
+            SCHEME="Bundles-Package"
+            else
+            SCHEME="Bundles"
+            fi
+            else
+            SCHEME="Bundles-iOS"
+            fi
+            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
+        - name: Build (iOS Release)
+          run: |
+            source "setup.sh"
+            echo "Building workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-iOS-build-release.log | xcpretty
+        - name: Test (iOS Release)
+          run: |
+            source "setup.sh"
+            echo "Testing workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "name=iPhone 11" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-iOS-test-release.log | xcpretty
+        - name: Detect Workspace & Scheme (tvOS)
+          run: |
+            WORKSPACE="Bundles.xcworkspace"
+            if [[ ! -e "$WORKSPACE" ]]
+            then
+            WORKSPACE="."
+            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Bundles-Package || true))
+            if [[ $GOTPACKAGE != "" ]]
+            then
+            SCHEME="Bundles-Package"
+            else
+            SCHEME="Bundles"
+            fi
+            else
+            SCHEME="Bundles-tvOS"
+            fi
+            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
+        - name: Build (tvOS Release)
+          run: |
+            source "setup.sh"
+            echo "Building workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-tvOS-build-release.log | xcpretty
+        - name: Test (tvOS Release)
+          run: |
+            source "setup.sh"
+            echo "Testing workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "name=Apple TV" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-tvOS-test-release.log | xcpretty
+        - name: Detect Workspace & Scheme (watchOS)
+          run: |
+            WORKSPACE="Bundles.xcworkspace"
+            if [[ ! -e "$WORKSPACE" ]]
+            then
+            WORKSPACE="."
+            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Bundles-Package || true))
+            if [[ $GOTPACKAGE != "" ]]
+            then
+            SCHEME="Bundles-Package"
+            else
+            SCHEME="Bundles"
+            fi
+            else
+            SCHEME="Bundles-watchOS"
+            fi
+            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
+        - name: Build (watchOS Release)
+          run: |
+            source "setup.sh"
+            echo "Building workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-watchOS-build-release.log | xcpretty
         - name: Upload Logs
           uses: actions/upload-artifact@v1
           if: always()
@@ -139,7 +529,7 @@ jobs:
           if: always()
           with:
             type: ${{ job.status }}
-            job_name: 'macOS (Swift Development Nightly)'
+            job_name: 'Xcode (Swift Development Nightly)'
             mention_if: 'failure'
             url: ${{ secrets.SLACK_WEBHOOK }}
 
