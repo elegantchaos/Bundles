@@ -20,7 +20,7 @@ let package = Package(
             targets: ["Bundles"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/elegantchaos/CollectionExtensions.git", from: "1.0.2"),
+        .package(url: "https://github.com/elegantchaos/Coercion.git", from: "1.0.3"),
         .package(url: "https://github.com/elegantchaos/Images.git", from: "1.0.0"),
         .package(url: "https://github.com/elegantchaos/Files.git", from: "1.1.3"),
         .package(url: "https://github.com/elegantchaos/SemanticVersion.git", from: "1.1.0"),
@@ -29,7 +29,7 @@ let package = Package(
     targets: [
         .target(
             name: "Bundles",
-            dependencies: ["CollectionExtensions", "Files", "Images", "SemanticVersion"]),
+            dependencies: ["Coercion", "Files", "Images", "SemanticVersion"]),
         .testTarget(
             name: "BundlesTests",
             dependencies: ["Bundles", "XCTestExtensions"]),
