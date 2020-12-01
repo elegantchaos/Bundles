@@ -20,11 +20,11 @@ let package = Package(
             targets: ["Bundles"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/elegantchaos/Coercion.git", from: "1.0.3"),
+        .package(url: "https://github.com/elegantchaos/Coercion.git", from: "1.0.4"),
         .package(url: "https://github.com/elegantchaos/Images.git", from: "1.0.0"),
         .package(url: "https://github.com/elegantchaos/Files.git", from: "1.1.3"),
         .package(url: "https://github.com/elegantchaos/SemanticVersion.git", from: "1.1.0"),
-        .package(url: "https://github.com/elegantchaos/XCTestExtensions", from: "1.1.2")
+        .package(url: "https://github.com/elegantchaos/XCTestExtensions.git", from: "1.1.2")
     ],
     targets: [
         .target(

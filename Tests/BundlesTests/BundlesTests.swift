@@ -1,3 +1,5 @@
+
+import SemanticVersion
 import XCTest
 import XCTestExtensions
 @testable import Bundles
@@ -37,6 +39,28 @@ final class BundlesTests: XCTestCase {
         XCTAssertEqual(data.name, "Test")
         XCTAssertEqual(data.description, "Some test data")
 
+    }
+
+    func testInfoFromBundle() {
+        let info = BundleInfo(for: bundle)
+        XCTAssertEqual(info.name, "Name")
+        XCTAssertEqual(info.id, "Identifier")
+        XCTAssertEqual(info.build, 1234)
+        XCTAssertEqual(info.version, SemanticVersion("1.2.3"))
+        XCTAssertEqual(info.commit, "Commit")
+        XCTAssertEqual(info.executable, "Executable")
+        XCTAssertEqual(info.copyright, "Copyright")
+    }
+
+    func testInfoFromConstructor() {
+        let info = BundleInfo(name: "Name", id: "Identifier", executable: "Executable", build: 1234, version: "1.2.3", commit: "Commit", copyright: "Copyright")
+        XCTAssertEqual(info.name, "Name")
+        XCTAssertEqual(info.id, "Identifier")
+        XCTAssertEqual(info.build, 1234)
+        XCTAssertEqual(info.version, SemanticVersion("1.2.3"))
+        XCTAssertEqual(info.commit, "Commit")
+        XCTAssertEqual(info.executable, "Executable")
+        XCTAssertEqual(info.copyright, "Copyright")
     }
 
 }

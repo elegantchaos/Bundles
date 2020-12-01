@@ -40,4 +40,29 @@ public struct BundleInfo {
         commit = info[stringWithKey: "Commit"] ?? ""
         copyright = info[stringWithKey: "NSHumanReadableCopyright"] ?? ""
     }
+    
+    #if canImport(UIKit) || canImport(AppKit)
+    public init(name: String, id: String, executable: String = "", icon: Image = Image(), build: Int, version: SemanticVersion, commit: String = "", copyright: String = "") {
+        self.name = name
+        self.id = id
+        self.executable = executable
+        self.icon = icon
+        self.build = build
+        self.version = version
+        self.commit = commit
+        self.copyright = copyright
+    }
+    #else
+    public init(name: String, id: String, executable: String = "", build: Int, version: SemanticVersion, commit: String = "", copyright: String = "")
+    {
+        self.name = name
+        self.id = id
+        self.executable = executable
+        self.build = build
+        self.version = version
+        self.commit = commit
+        self.copyright = copyright
+    }
+    #endif
+
 }

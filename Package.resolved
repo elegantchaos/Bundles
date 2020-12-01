@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/elegantchaos/Coercion.git",
         "state": {
           "branch": null,
-          "revision": "6872c101780abbe62bfe6e2498a2a3b14813ccd6",
-          "version": "1.0.3"
+          "revision": "b459678c9455627a217d45a0c81081f3886bc965",
+          "version": "1.0.4"
         }
       },
       {
@@ -39,7 +39,7 @@
       },
       {
         "package": "XCTestExtensions",
-        "repositoryURL": "https://github.com/elegantchaos/XCTestExtensions",
+        "repositoryURL": "https://github.com/elegantchaos/XCTestExtensions.git",
         "state": {
           "branch": null,
           "revision": "15991478b5c9bda527a0a59567ad0fa26940f74c",
