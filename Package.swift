@@ -11,8 +11,8 @@ let package = Package(
     name: "Bundles",
     platforms: [
         .macOS(.v10_13),
-        .iOS(.v10),
-        .tvOS(.v10),
+        .iOS(.v12),
+        .tvOS(.v12),
     ],
     products: [
         .library(
@@ -21,8 +21,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/elegantchaos/Coercion.git", from: "1.0.4"),
-        .package(url: "https://github.com/elegantchaos/Images.git", from: "1.0.0"),
-        .package(url: "https://github.com/elegantchaos/Files.git", from: "1.1.3"),
+        .package(url: "https://github.com/elegantchaos/Images.git", from: "1.1.2"),
+        .package(url: "https://github.com/elegantchaos/Files.git", from: "1.2.0"),
         .package(url: "https://github.com/elegantchaos/SemanticVersion.git", from: "1.1.0"),
         .package(url: "https://github.com/elegantchaos/XCTestExtensions.git", from: "1.1.2")
     ],
