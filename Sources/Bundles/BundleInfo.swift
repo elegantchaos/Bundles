@@ -28,17 +28,17 @@ public struct BundleInfo {
     public init(for bundle: Bundle = Bundle.main) {
         id = bundle.bundleIdentifier!
         let info = bundle.infoDictionary!
-        name = info[stringWithKey: "CFBundleName"] ?? ""
+        name = info[asString: "CFBundleName"] ?? ""
 
         #if canImport(UIKit) || canImport(AppKit)
-        icon = Image.imageOrBlank(named: info[stringWithKey: "CFBundleIconName"])
+        icon = Image.imageOrBlank(named: info[asString: "CFBundleIconName"])
         #endif
         
-        executable = info[stringWithKey: "CFBundleExecutable"] ?? ""
-        build = info[intWithKey: "CFBundleVersion"] ?? 0
-        version = SemanticVersion(info[stringWithKey:"CFBundleShortVersionString"])
-        commit = info[stringWithKey: "Commit"] ?? ""
-        copyright = info[stringWithKey: "NSHumanReadableCopyright"] ?? ""
+        executable = info[asString: "CFBundleExecutable"] ?? ""
+        build = info[asInt: "CFBundleVersion"] ?? 0
+        version = SemanticVersion(info[asString:"CFBundleShortVersionString"])
+        commit = info[asString: "Commit"] ?? ""
+        copyright = info[asString: "NSHumanReadableCopyright"] ?? ""
     }
     
     #if canImport(UIKit) || canImport(AppKit)
