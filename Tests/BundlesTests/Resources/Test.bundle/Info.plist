@@ -9,7 +9,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleIconName</key>
-	<string>$(RT_APP_ICON)</string>
+	<string>IconName</string>
 	<key>CFBundleName</key>
 	<string>Name</string>
 	<key>CFBundlePackageType</key>
