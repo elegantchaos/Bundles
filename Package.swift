@@ -13,7 +13,7 @@ let package = Package(
         .macOS(.v10_13),
         .iOS(.v12),
         .tvOS(.v12),
-        .watchOS(.v5)
+        .watchOS(.v6)
     ],
     products: [
         .library(
@@ -22,8 +22,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/elegantchaos/Coercion.git", from: "1.1.1"),
-        .package(url: "https://github.com/elegantchaos/Images.git", from: "1.1.5"),
-        .package(url: "https://github.com/elegantchaos/Files.git", from: "1.2.0"),
+        .package(url: "https://github.com/elegantchaos/Images.git", from: "1.1.6"),
+        .package(url: "https://github.com/elegantchaos/Files.git", from: "1.2.2"),
         .package(url: "https://github.com/elegantchaos/SemanticVersion.git", from: "1.1.0"),
         .package(url: "https://github.com/elegantchaos/XCTestExtensions.git", from: "1.3.2")
     ],
